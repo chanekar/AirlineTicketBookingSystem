@@ -21,188 +21,62 @@ import java.security.MessageDigest;
 
 public class Booking {
 	
-	public static void main(String args[]) throws Exception {
-		
-		System.out.println("Airline Ticket Booking System");
-		
-		welcome();	
-		
-	}
-	
-	// first screen that user views as program is started
-	public static void welcome() throws NoSuchAlgorithmException {
-		
-		System.out.println();
-		System.out.println("1. Log In");
-		System.out.println("2. Sign Up");
-		System.out.println("3. Quit");
-		System.out.println();
-		System.out.print("To select an option, enter number: ");
-	
+	public static void selectOptions(User c) {
 		
 		Scanner sc = new Scanner(System.in);
-		String input = sc.nextLine(); 
 		
-		if (input.equals("1")) login(0);
-		if (input.equals("2")) signup(0);
-		if (input.equals("3")) {
-			System.out.println("Logged out.");
-			System.exit(0);
-		}
+		System.out.println();
+		System.out.println("Please enter the following information:");
 		
+		System.out.print("First Name: ");
+		c.firstname = sc.nextLine(); 
+		System.out.print("Last Name: ");
+		c.lastname = sc.nextLine(); 
+		
+		System.out.print("Destination: ");
+		c.destination = sc.nextLine(); 
+		
+		SqliteDB db = new SqliteDB();
+		db.newUser(c.username);
+		db.enterInfo(c, "Users", "firstname", c.firstname);
+		db.enterInfo(c, "Users", "lastname", c.lastname);
+		db.enterInfo(c, "Users", "destination", c.destination);
+		db.enterBooked(c, true);
+		
+		db.listFlights();
+		
+		db.closeConnection();
+		
+		viewFlights(c);
+
 	}
 	
-	// login in screen
-	public static void login(int count) throws NoSuchAlgorithmException {
+	public static void viewFlights(User c) {
 		
-		if (count == 3) welcome();
+		// TODO sorting, reviews to each flight
+		
+		System.out.println();
+		System.out.println("Viewing flights to " + c.destination + ".");
+		System.out.println();
+		
+		SqliteDB db = new SqliteDB();
+		db.listFlights();
 		
 		Scanner sc = new Scanner(System.in);
 		System.out.println();
-		System.out.print("Username: ");
-		String username = sc.nextLine();
+		System.out.print("Enter Preferred Flight ID: ");
+		c.bookedFlightID = sc.nextLine(); 
+		db.enterInfo(c, "Users", "flightID", c.bookedFlightID);
 		
-		
-		if (userExists(username)) {
-			System.out.print("Password: ");
-			String password = sc.nextLine();
-			
-			User cur = new User(username);
-			cur.getIndex();
-			String stored = cur.getPass();
-			String entered = generateHash(password, "SHA-256", hexStringToByteArray(cur.getSalt()));
-			
-			if (!stored.equals(entered)) {
-				System.out.println("Password does not match. Try again.");
-				login(count += 1);
-			}
-			
-			
-		} else {
-			System.out.println("Username does not exist. Try again.");
-			login(count += 1);
-		}
-		
-		User cur = new User(username);
-		loggedIn(cur);
-		
+		db.closeConnection();
+		System.exit(0);
 	}
 	
-	// sign up screen
-	public static void signup(int count) throws NoSuchAlgorithmException {
-		
-		if (count == 3) {
-			welcome();
-		}
-		
+	public static void reviewTickets(User c) {
 		System.out.println();
-		System.out.println("Please enter the following information: ");
-		
-		Scanner sc = new Scanner(System.in);
-		System.out.print("Username: ");
-		String username = sc.nextLine();
-		
-		
-		// username does not exist
-		if (userExists(username) == false) {
-			User cur = new User(username);
-			System.out.print("Password: ");
-			String pwd = sc.nextLine();
-			
-			appendString("passwords.txt", generateHash(pwd, "SHA-256", createSalt()));
-			
-			System.out.println();
-			System.out.println("Account created.");
-			
-			appendString("users.txt", username);
-			loggedIn(cur);
-			
-		} else {
-			System.out.println("Username already exists. Enter new username.");
-			while (userExists(username)) signup(count += 1);
-		}
-		
-		
-	}
-	
-	// check to see if username exists in users.txt
-	public static boolean userExists(String username) {
-		
-		try {
-			Path path = Paths.get("users.txt");
-			Scanner sc = new Scanner(path);
-			while (sc.hasNextLine()) {
-				String line = sc.nextLine();
-				if (line.equals(username)) return true;
-			}
-			
-			sc.close();
-      } catch (IOException e) {
-          e.printStackTrace();
-      }
-	
-	return false;
-	
-	}
-	
-	// adds String information to .txt file
-	public static void appendString(String file, String info) {
-		try {
-		    PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file, true)));
-		    out.append("\r\n" + info);
-		    out.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public static void loggedIn(User cur) {
-		
-		System.out.println("Logged in as " + cur.getName() + ".");
-		System.out.println();
+		System.out.println("Reviewing booked tickets to " + c.destination + ".");
 		
 		System.exit(0);
-		
 	}
-	
-	// --------- HASH & SALT ---------- // 
-	
-	private static String generateHash(String data, String algorithm, byte[] salt) throws NoSuchAlgorithmException {
-		MessageDigest digest = MessageDigest.getInstance(algorithm);
-		digest.reset();
-		digest.update(salt);
-		byte[] hash = digest.digest(data.getBytes());
-		return bytesToStringHex(hash);
-	}
-	
-	private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
-	
-	public static String bytesToStringHex(byte[] bytes) {
-		char[] hexChars = new char[bytes.length*2];
-		for (int i = 0; i < bytes.length; i++) {
-			int v = bytes[i] & 0xFF;
-			hexChars[i*2] = hexArray[v >>> 4];
-			hexChars[i*2+1] = hexArray[v & 0x0F];
-		}
-		return new String(hexChars);
-	}
-	
-	public static byte[] hexStringToByteArray(String s) {
-	    int len = s.length();
-	    byte[] data = new byte[len / 2];
-	    for (int i = 0; i < len; i += 2) {
-	        data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-	                             + Character.digit(s.charAt(i+1), 16));
-	    }
-	    return data;
-	}
-	
-	public static byte[] createSalt() {
-		byte[] bytes = new byte[20];
-		SecureRandom random = new SecureRandom();
-		random.nextBytes(bytes);
-		appendString("salt.txt", bytesToStringHex(bytes));
-		return bytes;
-	}
-	
+
 }

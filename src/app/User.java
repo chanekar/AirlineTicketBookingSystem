@@ -14,7 +14,17 @@ import java.util.Scanner;
 
 public class User {
 	
-	private String username;
+	public String username;
+	public String firstname; 
+	public String lastname; 
+	
+	public String destination;
+	public String startDate;
+	public String endDate;
+	public String typeTrip;
+	public boolean hasBooked;
+	
+	public String bookedFlightID;
 	
 	User(String username) {
 		this.username = username;
@@ -83,6 +93,5 @@ public class User {
 	public String getName() {
 		return this.username;
 	}
-	
 	
 }
