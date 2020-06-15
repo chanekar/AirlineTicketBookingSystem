@@ -3,6 +3,7 @@ import java.util.Scanner;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.sql.Connection;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
 import java.io.FileReader;
@@ -60,7 +61,9 @@ public class Booking {
 		System.out.println();
 		
 		SqliteDB db = new SqliteDB();
-		db.listFlights();
+		// db.listFlights("price");
+		Connection conn = db.c;
+		DBTablePrinter.printTable(conn, "Flights", "airline");
 		
 		Scanner sc = new Scanner(System.in);
 		System.out.println();

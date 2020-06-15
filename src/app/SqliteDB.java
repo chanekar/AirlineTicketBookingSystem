@@ -111,6 +111,32 @@ public class SqliteDB {
 		}
 	}
 	
+	public void listFlights(String order) {
+		try {
+			this.stmt = c.createStatement();
+			ResultSet rs = stmt.executeQuery("SELECT * FROM Flights ORDER BY " + order);
+			ResultSetMetaData rsmd = rs.getMetaData();
+			int columnsNumber = rsmd.getColumnCount();
+			while (rs.next()) {
+			    for (int i = 1; i <= columnsNumber; i++) {
+			        if (i > 1) System.out.print(",  ");
+			        String columnValue = rs.getString(i);
+			        String columnTitle = rsmd.getColumnName(i).substring(0, 1).toUpperCase() + rsmd.getColumnName(i).substring(1);
+			        if (rsmd.getColumnName(i).equals("id")) columnTitle = "ID";
+			        if (rsmd.getColumnName(i).equals("price")) columnValue = "$" + columnValue;
+			        if (rsmd.getColumnName(i).equals("type")) {
+			        	if (columnValue.equals("0")) columnValue = "One Way";
+			        	else columnValue = "Round Trip";
+			        }
+			        System.out.print(columnTitle + ": " + columnValue);
+			    }
+			    System.out.println("");
+			}
+		} catch (Exception e) {
+			System.out.println("Error: " + e.getMessage());
+		}
+	}
+	
 	
 	/* ---------------- Other --------------- */
 	
