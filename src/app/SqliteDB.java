@@ -138,12 +138,45 @@ public class SqliteDB {
 	}
 	
 	
+	/* ---------------- Reviews --------------- */
+	
+	public void listReviews(String flightID) {
+		try {
+			this.stmt = c.createStatement();
+			ResultSet rs = stmt.executeQuery("SELECT * FROM Reviews WHERE flightID='" + flightID + "'");
+			ResultSetMetaData rsmd = rs.getMetaData();
+			int columnsNumber = rsmd.getColumnCount();
+			while (rs.next()) {
+			    for (int i = 1; i <= columnsNumber; i++) {
+			        if (i > 1) System.out.print(",  ");
+			        String columnValue = rs.getString(i);
+			        String columnTitle = rsmd.getColumnName(i).substring(0, 1).toUpperCase() + rsmd.getColumnName(i).substring(1);
+			       //  if (columnTitle.equals("FlightID")) continue;
+			        System.out.print(columnTitle + ": " + columnValue);
+			    }
+			    System.out.println("");
+			}
+		} catch (Exception e) {
+			System.out.println("Error: " + e.getMessage());
+		}
+	}
+	
+	
 	/* ---------------- Other --------------- */
 	
 	public void executeQuery(String query) {
 		try {
 			this.stmt = c.createStatement();
 			stmt.executeQuery(query);
+		} catch (Exception e) {
+			System.out.println("Error: " + e.getMessage());
+		}
+	}
+	
+	public void executeUpdate(String update) {
+		try {
+			this.stmt = c.createStatement();
+			stmt.executeUpdate(update);
 		} catch (Exception e) {
 			System.out.println("Error: " + e.getMessage());
 		}

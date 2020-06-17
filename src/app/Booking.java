@@ -4,6 +4,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
 import java.io.FileReader;
@@ -44,15 +45,13 @@ public class Booking {
 		db.enterInfo(c, "Users", "destination", c.destination);
 		db.enterBooked(c, true);
 		
-		db.listFlights();
-		
 		db.closeConnection();
 		
-		viewFlights(c);
+		viewFlights(c, "airline");
 
 	}
 	
-	public static void viewFlights(User c) {
+	public static void viewFlights(User c, String sort) {
 		
 		// TODO sorting, reviews to each flight
 		
@@ -63,23 +62,105 @@ public class Booking {
 		SqliteDB db = new SqliteDB();
 		// db.listFlights("price");
 		Connection conn = db.c;
-		DBTablePrinter.printTable(conn, "Flights", "airline");
+		DBTablePrinter.printTable(conn, "Flights", sort, c.destination, c);
+		
+		System.out.println();
+		System.out.println("1. Sort Flights");
+		System.out.println("2. Book Ticket");
+		System.out.println();
+		System.out.print("To select an option, enter number: ");
 		
 		Scanner sc = new Scanner(System.in);
+		String input = sc.nextLine();
 		System.out.println();
-		System.out.print("Enter Preferred Flight ID: ");
-		c.bookedFlightID = sc.nextLine(); 
-		db.enterInfo(c, "Users", "flightID", c.bookedFlightID);
-		
-		db.closeConnection();
+		if (input.equals("1")) {
+			System.out.println("Sort Flights: ");
+			System.out.println("1. Date");
+			System.out.println("2. Airline");
+			System.out.println("3. Departure");
+			System.out.println("4. # of Empty Seats");
+			System.out.println();
+			System.out.print("To select an option, enter number: ");
+			String newInput = sc.nextLine();
+			if (newInput.equals("1")) viewFlights(c, "date");
+			if (newInput.equals("2")) viewFlights(c, "airline");
+			if (newInput.equals("3")) viewFlights(c, "departure");
+			if (newInput.equals("4")) viewFlights(c, "emptySeats");
+		}  if (input.equals("2")) {
+			System.out.print("Enter Preferred Flight ID: ");
+			c.bookedFlightID = sc.nextLine(); 
+			db.enterInfo(c, "Users", "flightID", c.bookedFlightID);
+			// db.closeConnection();
+			flightInfo(c);
+		}
+	
 		System.exit(0);
 	}
 	
+	public static void flightInfo(User c) {
+		
+		SqliteDB db = new SqliteDB();
+		
+		db.listReviews(c.bookedFlightID);
+		
+		
+		System.out.println();
+		System.out.println("Enter following information: ");
+		Scanner sc = new Scanner(System.in);
+		System.out.print("# of Adults: ");
+		String numAdults = sc.nextLine();
+		db.enterInfo(c, "Users", "adults", numAdults);
+		System.out.print("# of Children: ");
+		String numChildren = sc.nextLine();
+		db.enterInfo(c, "Users", "children", numChildren);
+		System.out.print("Enter Class Number [(1) First, (2) Business, (3) Economy]: ");
+		db.enterInfo(c, "Users", "class", sc.nextLine());
+		int a = Integer.parseInt(numAdults); c.adults = a;
+		int ch = Integer.parseInt(numChildren);  c.children = ch;
+		System.out.print("Your booking comes with a maximum of " + (a+ch)*2 + " bag(s). Would you like to add more? [(1) Yes / (2) No]");
+		System.out.println();
+		
+		db.executeUpdate("UPDATE Flights SET emptySeats = emptySeats - " + (a+ch) + " WHERE id='" + c.bookedFlightID + "' and emptySeats > 0");
+		db.closeConnection(); 
+		paymentSystem(c);
+	}
+	
+	public static void paymentSystem(User c) {
+		
+		System.out.println("Enter payment info.");
+		Startup.loggedIn(c);
+	}
+	
 	public static void reviewTickets(User c) {
+		
 		System.out.println();
 		System.out.println("Reviewing booked tickets to " + c.destination + ".");
+		System.out.println("Adults: " + c.adults);
+		System.out.println("Children: " + c.children);
 		
-		System.exit(0);
+		Scanner sc = new Scanner(System.in);
+		System.out.print("Would you like to write a review? [(1) Yes / (2) No] ");
+		if (sc.nextLine().equals("1")) {
+			SqliteDB db = new SqliteDB();
+			System.out.print("From 1 to 5, what would you rate your experience? ");
+			String rating = sc.nextLine();
+			System.out.print("Write your review: ");
+			String review = sc.nextLine();
+			
+			db.executeUpdate("INSERT INTO Reviews (flightID, firstname, lastname, rating, review) VALUES ('" + c.bookedFlightID 
+					+ "', '" + c.firstname + "', '" + c.lastname + "', '" + rating + "', '" + review + "')");
+			
+			System.out.println("Thank you for your review!");
+			System.out.println();
+			Startup.loggedIn(c);
+			
+		} else {
+			System.out.println("Enjoy your trip!");
+			Startup.loggedIn(c);
+		}
+		
 	}
+	
+	
 
 }

@@ -23,6 +23,8 @@ public class User {
 	public String endDate;
 	public String typeTrip;
 	public boolean hasBooked;
+	public int adults;
+	public int children;
 	
 	public String bookedFlightID;
 	

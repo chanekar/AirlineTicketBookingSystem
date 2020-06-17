@@ -28,8 +28,10 @@ public class Startup {
 //		db.listFlights();
 //		
 //		db.closeConnection();
-		
-		Booking.viewFlights(new User("jsmith"));
+		User c = new User("jsmith");
+		c.destination = "Toronto";
+		c.bookedFlightID = "1";
+		Booking.flightInfo(c);
 
 //		System.out.println("Airline Ticket Booking System");
 //		welcome();	
@@ -168,10 +170,8 @@ public class Startup {
 	
 	public static void loggedIn(User cur) {
 		
-		cur.hasBooked = true;
-		
-		System.out.println("Logged in as " + cur.getName() + ".");
-		System.out.println();
+		// System.out.println("Logged in as " + cur.getName() + ".");
+		// System.out.println();
 		
 		System.out.println();
 		System.out.println("1. Book Tickets");

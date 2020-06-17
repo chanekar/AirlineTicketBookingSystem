@@ -311,8 +311,8 @@ public class DBTablePrinter {
      * @param conn Database connection object (java.sql.Connection)
      * @param tableName Name of the database table
      */
-    public static void printTable(Connection conn, String tableName, String order){
-        printTable(conn, tableName, DEFAULT_MAX_ROWS, DEFAULT_MAX_TEXT_COL_WIDTH, order);
+    public static void printTable(Connection conn, String tableName, String order, String destination, User c){
+        printTable(conn, tableName, DEFAULT_MAX_ROWS, DEFAULT_MAX_TEXT_COL_WIDTH, order, destination, c);
     }
 
     /**
@@ -327,8 +327,8 @@ public class DBTablePrinter {
      * @param tableName Name of the database table
      * @param maxRows Number of max. rows to query and print
      */
-    public static void printTable(Connection conn, String tableName, int maxRows, String order) {
-        printTable(conn, tableName, maxRows, DEFAULT_MAX_TEXT_COL_WIDTH, order);
+    public static void printTable(Connection conn, String tableName, int maxRows, String order, String destination, User c) {
+        printTable(conn, tableName, maxRows, DEFAULT_MAX_TEXT_COL_WIDTH, order, destination, c);
     }
 
     /**
@@ -344,7 +344,7 @@ public class DBTablePrinter {
      * @param maxRows Number of max. rows to query and print
      * @param maxStringColWidth Max. width of text columns
      */
-    public static void printTable(Connection conn, String tableName, int maxRows, int maxStringColWidth, String order) {
+    public static void printTable(Connection conn, String tableName, int maxRows, int maxStringColWidth, String order, String destination, User c) {
         if (conn == null) {
             System.err.println("DBTablePrinter Error: No connection to database (Connection is null)!");
             return;
@@ -370,9 +370,15 @@ public class DBTablePrinter {
                 return;
             }
 
-            String sqlSelectAll = "SELECT * FROM " + tableName + " ORDER BY " + order;
+            String sqlSelectAll = "SELECT * FROM " + tableName + " WHERE destination='" + destination + "' ORDER BY " + order;
             stmt = conn.createStatement();
             rs = stmt.executeQuery(sqlSelectAll);
+            
+            if (rs.isClosed()) {
+                System.out.println("No flights exist.");
+                System.out.println("Please enter information again along with new destination.");
+                Booking.selectOptions(c);
+            }
 
             printResultSet(rs, maxStringColWidth);
 
