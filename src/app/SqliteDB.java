@@ -164,13 +164,15 @@ public class SqliteDB {
 	
 	/* ---------------- Other --------------- */
 	
-	public void executeQuery(String query) {
+	public ResultSet executeQuery(String query) {
 		try {
 			this.stmt = c.createStatement();
-			stmt.executeQuery(query);
+			return stmt.executeQuery(query);
 		} catch (Exception e) {
 			System.out.println("Error: " + e.getMessage());
 		}
+		
+		return null;
 	}
 	
 	public void executeUpdate(String update) {

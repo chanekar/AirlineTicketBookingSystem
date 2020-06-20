@@ -23,18 +23,15 @@ public class Startup {
 	
 	public static void main(String args[]) throws Exception {
 		
-//		SqliteDB db = new SqliteDB();
-//		
-//		db.listFlights();
-//		
-//		db.closeConnection();
 		User c = new User("jsmith");
-		c.destination = "Toronto";
-		c.bookedFlightID = "1";
-		Booking.flightInfo(c);
+		SqliteDB db = new SqliteDB();
+		c.getInfo(c.username);
+		db.closeConnection();
+//		
+		Booking.viewFlights(c, "id");
 
-//		System.out.println("Airline Ticket Booking System");
-//		welcome();	
+		System.out.println("Airline Ticket Booking System");
+		welcome();	
 		
 	}
 	
@@ -170,15 +167,17 @@ public class Startup {
 	
 	public static void loggedIn(User cur) {
 		
-		// System.out.println("Logged in as " + cur.getName() + ".");
-		// System.out.println();
+		SqliteDB db = new SqliteDB();
+		cur.getInfo(cur.username);
+		db.closeConnection();
 		
 		System.out.println();
-		System.out.println("1. Book Tickets");
+
 		if (cur.hasBooked) {
-			System.out.println("2. Review Booked Tickets");
-			System.out.println("3. Log Out");
+			System.out.println("1. Review Booked Tickets");
+			System.out.println("2. Log Out");
 		} else {
+			System.out.println("1. Book Tickets");
 			System.out.println("2. Log Out");
 		}
 		System.out.println();
@@ -187,14 +186,11 @@ public class Startup {
 		Scanner sc = new Scanner(System.in);
 		String input = sc.nextLine(); 
 		
-		if (input.equals("1")) {
-			Booking.selectOptions(cur);
-		} else if (input.equals("2") && !cur.hasBooked) {
-			System.out.println("Logged out.");
-			System.exit(0);
-		} else if (input.equals("2") && cur.hasBooked){
+		if (input.equals("1") && cur.hasBooked) {
 			Booking.reviewTickets(cur);
-		} else if (input.equals("3")){
+		} else if (input.equals("1") && !cur.hasBooked) {
+			Booking.selectOptions(cur);
+		} else if (input.equals("2")){
 			System.out.println("Logged out.");
 			System.exit(0);
 		} else loggedIn(cur);

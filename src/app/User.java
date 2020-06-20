@@ -3,6 +3,8 @@ package app;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.util.Scanner;
 
 /**
@@ -27,6 +29,7 @@ public class User {
 	public int children;
 	
 	public String bookedFlightID;
+	public String flightClass;
 	
 	User(String username) {
 		this.username = username;
@@ -90,6 +93,38 @@ public class User {
 		
 		return null;
 		
+	}
+	
+	// retrieves information from database and stores in User object
+	public User getInfo(String username) {
+		
+		try {
+			SqliteDB db = new SqliteDB();
+			ResultSet rs = db.executeQuery("SELECT * FROM USERS WHERE username='" + username + "'");
+			while (rs.next()) {
+				this.firstname = rs.getString("firstname");
+				this.lastname = rs.getString("lastname");
+				this.destination = rs.getString("destination");
+				this.adults = rs.getInt("adults");
+				this.children = rs.getInt("children");
+				this.bookedFlightID = rs.getString("flightID");
+				
+				int classval = rs.getInt("class");
+				if (classval == 1) this.flightClass = "First";
+				else if (classval == 2) this.flightClass = "Business";
+				else if (classval == 3) this.flightClass = "Economy";
+				
+				int booked = rs.getInt("booked");
+				if (booked == 1) this.hasBooked = true;
+				else this.hasBooked = false;
+			}
+			
+		} catch (Exception e) {
+			System.out.println("Error: " + e.getMessage());
+		}
+		
+		return this;
+	
 	}
 	
 	public String getName() {

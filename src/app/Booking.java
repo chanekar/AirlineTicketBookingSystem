@@ -4,6 +4,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
@@ -117,7 +118,21 @@ public class Booking {
 		db.enterInfo(c, "Users", "class", sc.nextLine());
 		int a = Integer.parseInt(numAdults); c.adults = a;
 		int ch = Integer.parseInt(numChildren);  c.children = ch;
-		System.out.print("Your booking comes with a maximum of " + (a+ch)*2 + " bag(s). Would you like to add more? [(1) Yes / (2) No]");
+		System.out.print("Your booking comes with a maximum of " + (a+ch)*2 + " bag(s).");
+		System.out.println();
+		
+		ResultSet rs = db.executeQuery("SELECT * FROM Flights WHERE id='" + c.bookedFlightID + "'");
+		int price = 0;
+		try {
+			while (rs.next()) { 
+				price = rs.getInt("price");
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		System.out.print("Total cost: $" + (price*(a) + price*0.90*ch));
 		System.out.println();
 		
 		db.executeUpdate("UPDATE Flights SET emptySeats = emptySeats - " + (a+ch) + " WHERE id='" + c.bookedFlightID + "' and emptySeats > 0");
@@ -127,20 +142,35 @@ public class Booking {
 	
 	public static void paymentSystem(User c) {
 		
-		System.out.println("Enter payment info.");
+		System.out.println();
+		System.out.println("Payment System");
+		
+		Scanner sc = new Scanner(System.in);
+		System.out.print("Card Holder Name: ");
+		sc.nextLine();
+		System.out.print("Credit Card Number: ");
+		sc.nextLine();
+		System.out.print("Expiration (MM/YYYY): ");
+		sc.nextLine();
+		System.out.print("CVV: ");
+		sc.nextLine();
+		System.out.println();
+		System.out.println("Transaction complete. Enjoy your flight!");
+		c.hasBooked = true;
 		Startup.loggedIn(c);
 	}
 	
 	public static void reviewTickets(User c) {
 		
 		System.out.println();
-		System.out.println("Reviewing booked tickets to " + c.destination + ".");
-		System.out.println("Adults: " + c.adults);
-		System.out.println("Children: " + c.children);
+		System.out.println("Tickets have been booked to " + c.destination + ", for " 
+				+ c.adults + " adults and " + c.children + " children in " + c.flightClass + " class.");
+		System.out.println();
 		
 		Scanner sc = new Scanner(System.in);
 		System.out.print("Would you like to write a review? [(1) Yes / (2) No] ");
 		if (sc.nextLine().equals("1")) {
+			
 			SqliteDB db = new SqliteDB();
 			System.out.print("From 1 to 5, what would you rate your experience? ");
 			String rating = sc.nextLine();
@@ -151,7 +181,6 @@ public class Booking {
 					+ "', '" + c.firstname + "', '" + c.lastname + "', '" + rating + "', '" + review + "')");
 			
 			System.out.println("Thank you for your review!");
-			System.out.println();
 			Startup.loggedIn(c);
 			
 		} else {
